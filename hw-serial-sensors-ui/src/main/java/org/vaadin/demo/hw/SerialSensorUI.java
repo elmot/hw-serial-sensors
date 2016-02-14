@@ -3,47 +3,60 @@ package org.vaadin.demo.hw;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.annotations.Widgetset;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-import javafx.scene.chart.LineChart;
 
 import javax.servlet.annotation.WebServlet;
 import java.util.function.BiConsumer;
+
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 
 /**
  *
  */
 @Theme("valo")
 @JavaScript("serial.js")
+@Widgetset("org.vaadin.demo.hw.SerialSensorWidgetset")
 public class SerialSensorUI extends UI {
 
     public static final BiConsumer<Boolean, String> DUMMY_HANDLER = (q, s) -> {
     };
+
     private Serial serial;
     private Button connectButton;
     private Button disconnectButton;
 
+    ChartHandler chartHandler;
+
     @Override
     protected void init(VaadinRequest vaadinRequest) {
+        chartHandler = new ChartHandler();
         serial = new Serial();
         serial.setReceiveHandler((success, info) -> {
-            Notification.show(info);
+            if (success) {
+                chartHandler.processLine(info);
+            } else {
+                Notification.show(info, WARNING_MESSAGE);
+            }
         });
         serial.setStatusHandler((connected, message) -> getUI().access(() -> {
                     connectButton.setEnabled(!connected);
                     disconnectButton.setEnabled(connected);
                     if (message != null && !message.isEmpty()) {
-                        Notification.show(message, Notification.Type.WARNING_MESSAGE);
+                        Notification.show(message, WARNING_MESSAGE);
                     }
                 }
         ));
@@ -65,13 +78,17 @@ public class SerialSensorUI extends UI {
         disconnectButton.addStyleName(ValoTheme.BUTTON_DANGER);
 
         HorizontalLayout buttonLayout = new HorizontalLayout(connectButton, disconnectButton);
-        buttonLayout.setMargin(true);
         buttonLayout.setSpacing(true);
 
-        layout.addComponents(buttonLayout);
+        Component chart = chartHandler.getChart();
+        chart.setSizeFull();
 
+        layout.addComponents(buttonLayout, chart);
+        layout.setExpandRatio(chart, 1.0f);
+        layout.setSizeFull();
         setContent(layout);
     }
+
 
     @WebServlet(urlPatterns = "/*", name = "SerialSensorServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = SerialSensorUI.class, productionMode = false)
@@ -103,9 +120,9 @@ public class SerialSensorUI extends UI {
                                 break;
                         }
                         if (!message.isEmpty()) {
-                            Notification.show(message, success ? Notification.Type.ASSISTIVE_NOTIFICATION : Notification.Type.WARNING_MESSAGE);
+                            Notification.show(message, success ? Notification.Type.ASSISTIVE_NOTIFICATION : WARNING_MESSAGE);
                         } else if (!success) {
-                            Notification.show("Unknown error", Notification.Type.WARNING_MESSAGE);
+                            Notification.show("Unknown error", WARNING_MESSAGE);
                         }
                     });
         }
@@ -134,8 +151,8 @@ public class SerialSensorUI extends UI {
 
         @SuppressWarnings("unused")
         public boolean sendTextToSerial(String text) {
-            //TODO fix XSS
-            Page.getCurrent().getJavaScript().execute("sendText('" + text + "')");
+            String escapedText = Json.create(text).toJson();
+            Page.getCurrent().getJavaScript().execute("sendText(" + escapedText + ")");
             return false;
         }
 
