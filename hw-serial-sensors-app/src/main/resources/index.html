@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>Vaadin Modem Call Test</title>
+    <style type="text/css">
+        webview {
+            width: 100%;
+            height: 80%;
+            margin-bottom: 1em
+        }
+
+        #console-container {
+            overflow: scroll;
+            height: 20%;
+            width: 100%;
+            margin: 0
+        }
+
+        #buffer {
+            padding: 0.5em
+        }
+    </style>
+</head>
+<body>
+<webview id="vaadinApp" src="http://localhost:8080/"></webview>
+<div id="console-container">
+    <div id="buffer">
+    </div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>
