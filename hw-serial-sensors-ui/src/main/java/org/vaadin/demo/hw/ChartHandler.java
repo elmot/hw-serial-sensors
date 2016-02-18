@@ -79,7 +79,7 @@ public class ChartHandler {
 
         Legend legend = configuration.getLegend();
         legend.setLayout(LayoutDirection.VERTICAL);
-        legend.setHorizontalAlign(HorizontalAlign.RIGHT);
+        legend.setAlign(HorizontalAlign.RIGHT);
         legend.setVerticalAlign(VerticalAlign.TOP);
         legend.setX(-10d);
         legend.setY(100d);
@@ -130,7 +130,7 @@ public class ChartHandler {
         for (int i = 2; i < 5; i++) {
             tokenizer.nextToken();
             String s = tokenizer.nextToken().trim();
-            data[i][MAX_POINTS-1] = Double.parseDouble(s);
+            data[i][0] = Double.parseDouble(s);
         }
     }
 
@@ -138,14 +138,14 @@ public class ChartHandler {
         if (!line.startsWith(prefix)) return false;
         String s = line.substring(prefix.length()).trim();
         double v = Double.parseDouble(s);
-        data[index][MAX_POINTS-1] = v;
+        data[index][0] = v;
         return true;
     }
 
 
     private void stepChart() {
         for (int i = 0; i < data.length; i++) {
-            System.arraycopy(data[i],1,data[i],0,MAX_POINTS - 1);
+            System.arraycopy(data[i],0,data[i],1,MAX_POINTS - 1);
             ListSeries listSeries = (ListSeries) series.get(i);
             listSeries.setData(data[i]);
         }
