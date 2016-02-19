@@ -28,22 +28,30 @@ import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
  *
  */
 @Theme("valo")
-@JavaScript("serial.js")
+@JavaScript("vaadinSerial.js")
 @Widgetset("org.vaadin.demo.hw.SerialSensorWidgetset")
 public class SerialSensorUI extends UI {
 
-    public static final BiConsumer<Boolean, String> DUMMY_HANDLER = (q, s) -> {
-    };
+    /**
+     * Provides various helper methods for connectors. Meant for internal use.
+     *
+     * @author Vaadin Ltd
+     */
+    public interface DataChart {
+        Component getComponent();
+
+        void processLine(String line);
+    }
 
     private Serial serial;
     private Button connectButton;
     private Button disconnectButton;
 
-    ChartHandler chartHandler;
+    private DataChart chartHandler;
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
-        chartHandler = new ChartHandler();
+        chartHandler = new DataChartImpl();
         serial = new Serial();
         serial.setReceiveHandler((success, info) -> {
             if (success) {
@@ -80,7 +88,7 @@ public class SerialSensorUI extends UI {
         HorizontalLayout buttonLayout = new HorizontalLayout(connectButton, disconnectButton);
         buttonLayout.setSpacing(true);
 
-        Component chart = chartHandler.getChart();
+        Component chart = chartHandler.getComponent();
         chart.setSizeFull();
 
         layout.addComponents(buttonLayout, chart);
@@ -97,8 +105,8 @@ public class SerialSensorUI extends UI {
 
     public class Serial {
 
-        private BiConsumer<Boolean, String> textLineHandler = DUMMY_HANDLER;
-        private BiConsumer<Boolean, String> connectionHandler = DUMMY_HANDLER;
+        private BiConsumer<Boolean, String> textLineHandler;
+        private BiConsumer<Boolean, String> connectionHandler;
 
         private Serial() {
             Page.getCurrent().getJavaScript().addFunction("org.vaadin.demo.hw.serialCallBack",
@@ -157,11 +165,12 @@ public class SerialSensorUI extends UI {
         }
 
         public void setReceiveHandler(BiConsumer<Boolean, String> textLineHandler) {
-            this.textLineHandler = textLineHandler == null ? DUMMY_HANDLER : textLineHandler;
+            this.textLineHandler = textLineHandler;
         }
 
         public void setStatusHandler(BiConsumer<Boolean, String> connectionHandler) {
-            this.connectionHandler = connectionHandler == null ? DUMMY_HANDLER : connectionHandler;
+            this.connectionHandler = connectionHandler;
         }
     }
+
 }

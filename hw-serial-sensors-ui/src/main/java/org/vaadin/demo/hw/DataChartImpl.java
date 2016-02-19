@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
  *
  * @author Vaadin Ltd
  */
-public class ChartHandler {
+public class DataChartImpl implements SerialSensorUI.DataChart {
 
     public static final int MAX_POINTS = 50;
 
@@ -44,7 +44,7 @@ public class ChartHandler {
     private Number[][] data = new Number[5][];
 
 
-    public ChartHandler() {
+    public DataChartImpl() {
         for (int i = 0; i < data.length; i++) {
             data[i] = new Number[MAX_POINTS];
 
@@ -99,10 +99,19 @@ public class ChartHandler {
         aSeries.setyAxis(axis);
     }
 
-    public Chart getChart() {
+    @Override
+    public Chart getComponent() {
         return chart;
     }
 
+    /*
+    Strings to be parsed:
+                TimeStamp: 00:00:02.29
+                MAG_X[0]: 383, MAG_Y[0]: -327, MAG_Z[0]: 156
+                HUM[0]: 46.59
+                TEMP[0]: 24.60
+    */
+    @Override
     public void processLine(String line) {
         if (line == null) return;
         if (line.startsWith("TimeStamp:")) {
@@ -112,18 +121,8 @@ public class ChartHandler {
                 updateAcceleration(line);
             }
         }
-/*
-            TimeStamp: 00:00:02.29
-                MAG_X[0]: 383, MAG_Y[0]: -327, MAG_Z[0]: 156
-            HUM[0]: 46.59
-            TEMP[0]: 24.60
-                 PRESS[0]: 1000.59
-*/
-
-
     }
 
-    //    ACC_X[0]: 38, ACC_Y[0]: 25, ACC_Z[0]: 1032
     private void updateAcceleration(String line) {
         if (!line.startsWith("ACC_X[0]:")) return;
         StringTokenizer tokenizer = new StringTokenizer(line, ":,");
@@ -145,7 +144,7 @@ public class ChartHandler {
 
     private void stepChart() {
         for (int i = 0; i < data.length; i++) {
-            System.arraycopy(data[i],0,data[i],1,MAX_POINTS - 1);
+            System.arraycopy(data[i], 0, data[i], 1, MAX_POINTS - 1);
             ListSeries listSeries = (ListSeries) series.get(i);
             listSeries.setData(data[i]);
         }
