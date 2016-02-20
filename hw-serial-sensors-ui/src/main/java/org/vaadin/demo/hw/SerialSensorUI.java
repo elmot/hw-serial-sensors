@@ -32,22 +32,18 @@ import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 @Widgetset("org.vaadin.demo.hw.SerialSensorWidgetset")
 public class SerialSensorUI extends UI {
 
-    /**
-     * Provides various helper methods for connectors. Meant for internal use.
-     *
-     * @author Vaadin Ltd
-     */
     public interface DataChart {
         Component getComponent();
 
         void processLine(String line);
     }
 
+    private DataChart chartHandler;
+
     private Serial serial;
     private Button connectButton;
     private Button disconnectButton;
 
-    private DataChart chartHandler;
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {

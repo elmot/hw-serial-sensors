@@ -1,4 +1,3 @@
-const serial = chrome.serial;
 var expectedConnectionId;
 
 var stringReceived = '';
@@ -18,8 +17,7 @@ function convertStringToArrayBuffer(str) {
 
 function convertArrayBufferToString(buf) {
     var bufView = new Uint8Array(buf);
-    var encodedString = String.fromCharCode.apply(null, bufView);
-    return decodeURIComponent(escape(encodedString));
+    return String.fromCharCode.apply(null, bufView);
 }
 
 /*
@@ -30,7 +28,7 @@ function convertArrayBufferToString(buf) {
 function disconnect(reconnectAfter) {
     if (expectedConnectionId == null) return;
         doLog("Disconnecting", true);
-    serial.disconnect(expectedConnectionId,
+    chrome.serial.disconnect(expectedConnectionId,
         function (q) {
             if (!q) doLog("Disconnect Failed");
 
@@ -45,7 +43,7 @@ function connect() {
         disconnect(true);
     }
     doLog("Looking for serial ports", true);
-    serial.getDevices(function (ports) {
+    chrome.serial.getDevices(function (ports) {
         var foundSerial = null;
         for (var i = 0; i < ports.length; i++) {
             var name = ports[i].displayName;
@@ -66,26 +64,6 @@ function connect() {
     });
 }
 
-function writeSerial(str) {
-    doLog("S: " + str);
-    if (expectedConnectionId == null) {
-        doLog("Not connected", true);
-        return false
-    }
-    serial.send(expectedConnectionId, convertStringToArrayBuffer(str),
-        function (sendInfo) {
-            if (sendInfo.error) {
-                doLog(sendInfo.error, true);
-                vaadinCallBack("writeSerial", false, sendInfo.error);
-            } else {
-                serial.flush(expectedConnectionId, function (q) {
-                    vaadinCallBack("flush", q);
-                });
-            }
-        });
-}
-
-
 function connectedHandler(connectInfo) {
     if (connectInfo == null) {
         doLog("Connection failed", true);
@@ -97,11 +75,30 @@ function connectedHandler(connectInfo) {
     }
 }
 
-serial.onReceiveError.addListener(function (info) {
+function writeSerial(str) {
+    doLog("S: " + str);
+    if (expectedConnectionId == null) {
+        doLog("Not connected", true);
+        return false
+    }
+    chrome.serial.send(expectedConnectionId, convertStringToArrayBuffer(str),
+        function (sendInfo) {
+            if (sendInfo.error) {
+                doLog(sendInfo.error, true);
+                vaadinCallBack("writeSerial", false, sendInfo.error);
+            } else {
+                chrome.serial.flush(expectedConnectionId, function (q) {
+                    vaadinCallBack("flush", q);
+                });
+            }
+        });
+}
+
+chrome.serial.onReceiveError.addListener(function (info) {
     vaadinCallBack("readSerial", false, info.error);
 });
 
-serial.onReceive.addListener(function (info) {
+chrome.serial.onReceive.addListener(function (info) {
     if (info.connectionId == expectedConnectionId && info.data) {
         stringReceived += convertArrayBufferToString(info.data);
         var lines = stringReceived.split("\n");
