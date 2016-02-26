@@ -48,6 +48,8 @@ window.addEventListener("message",
 
 document.getElementById("vaadinApp").addEventListener("contentload",
     function () {
+        // save a webview content object for a future use
         vaadinWindowContent = document.getElementById("vaadinApp").contentWindow;
+        // handshake
         vaadinCallBack("init");
     });
