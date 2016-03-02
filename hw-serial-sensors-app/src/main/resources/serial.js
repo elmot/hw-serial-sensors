@@ -48,7 +48,9 @@ function connect() {
         for (var i = 0; i < ports.length; i++) {
             var name = ports[i].displayName;
             var portDesc = ports[i].path + ": " + name;
-            if (name == "STMicroelectronics STLink Virtual COM Port") {
+            if (name == "STMicroelectronics STLink Virtual COM Port" ||
+                name == "STM32_STLink" ||
+                name == "STM32 STLink") {
                 foundSerial = ports[i];
                 portDesc += "[Actual]"
             }
