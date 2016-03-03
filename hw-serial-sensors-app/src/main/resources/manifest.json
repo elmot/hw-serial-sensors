@@ -1,6 +1,6 @@
 {
   "name": "X-NUCLEO-IKS01A1 Demo App",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "manifest_version": 2,
   "permissions": ["serial","webview"],
   "minimum_chrome_version": "43",
