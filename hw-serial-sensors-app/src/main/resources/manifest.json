@@ -1,6 +1,6 @@
 {
   "name": "X-NUCLEO-IKS01A1 Demo App",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "manifest_version": 2,
   "permissions": ["serial","webview"],
   "minimum_chrome_version": "43",
@@ -10,8 +10,7 @@
   },
   "app": {
     "background": {
-      "scripts": ["assets/launch.js"],
-      "transient": true
+      "scripts": ["assets/launch.js"]
     }
   }
 }
